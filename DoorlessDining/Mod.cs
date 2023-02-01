@@ -4,6 +4,7 @@ using KitchenLib;
 using KitchenMods;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.Entities;
 using UnityEngine;
 
 // Namespace should have "Kitchen" in the beginning
@@ -25,13 +26,24 @@ namespace KitchenDoorlessDining
 
         public Mod() : base(MOD_GUID, MOD_NAME, MOD_AUTHOR, MOD_VERSION, MOD_GAMEVERSION, Assembly.GetExecutingAssembly()) { }
 
-
         protected override void Initialise()
         {
             base.Initialise();
             // For log file output so the official plateup support staff can identify if/which a mod is being used
-            LogWarning($"{MOD_GUID} v{MOD_VERSION} in use!"); 
+            LogWarning($"{MOD_GUID} v{MOD_VERSION} in use!");
 
+        }
+
+        // Harmony Patches
+        [HarmonyPatch(typeof(Door))]
+        public static class DoorRemovalPatch
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(Door.Update))]
+            public static void UpdatePostfix(Door __instance)
+            {
+                __instance.DoorGameObject.SetActive(false);
+            }
         }
 
         #region Logging
